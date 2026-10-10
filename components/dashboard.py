@@ -1,6 +1,7 @@
 """Oito telas; toda interação consome somente o snapshot público protegido."""
 
 import math
+from html import escape
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -24,7 +25,7 @@ NAV = [
     ("b1", "B1 · Oferta municipal", "Desertos de ensino superior", "pages/6_Municipios.py"),
     ("b2", "B2 · Financiamento", "Financiamento e permanência", "pages/7_Financiamento.py"),
 ]
-COLORS = {"Desistência": "#e5704c", "Conclusão": "#258778", "Permanência": "#6f88ab",
+COLORS = {"Desistência": "#ef4444", "Conclusão": "#2864eb", "Permanência": "#94a3b8",
           "Pública": "#258778", "Privada": "#e5704c", "Presencial": "#258778", "EAD": "#6f88ab"}
 LABELS = {"ano": "Ano", "coorte": "Coorte", "curso": "Curso", "instituicao": "Instituição",
           "area": "Área", "rede": "Rede", "modalidade": "Modalidade", "grau": "Grau",
@@ -58,13 +59,22 @@ def number(value, decimals=0, suffix=""):
 
 def style():
     st.markdown("""<style>
-    .stApp {background:#f6f7f3;color:#213a36;}
-    [data-testid="stSidebar"] {background:#edf1eb;border-right:1px solid #dce3da;}
+    .stApp {background:#f7f9fc;color:#172033;}
+    [data-testid="stSidebar"] {background:#fff;border-right:1px solid #e2e8f0;}
     .block-container {max-width:1260px;padding-top:2.4rem;padding-bottom:3rem;}
-    h1,h2,h3 {font-family:Georgia,'Times New Roman',serif;letter-spacing:-.025em;color:#183e36;}
-    h1 {font-size:2.7rem!important;line-height:1.1!important;}
+    h1,h2,h3 {font-family:Arial,sans-serif;letter-spacing:-.025em;color:#172033;}
+    h1 {font-size:2rem!important;line-height:1.2!important;}
+    h2 {font-size:1.3rem!important;}
     [data-testid="stMetric"] {background:white;padding:1.1rem 1.2rem;border:1px solid #e0e6dd;border-radius:12px;}
-    [data-testid="stMetricValue"] {color:#1b6658;font-size:2rem;}
+    [data-testid="stMetricValue"] {color:#2864eb;font-size:2rem;}
+    [data-testid="stVerticalBlockBorderWrapper"] > div {background:white;}
+    .question {padding:18px 20px;background:#eff6ff;border:1px solid #cbdffc;border-radius:14px;color:#254780;font-weight:600;margin:16px 0 24px;}
+    .kpi {background:white;border:1px solid #e2e8f0;border-radius:14px;padding:20px;min-height:142px;box-shadow:0 2px 4px #17203304;}
+    .kpi-label {font-size:.82rem;color:#64748b;}
+    .kpi-value {font-size:2rem;font-weight:800;margin:7px 0;}
+    .kpi-note {font-size:.75rem;color:#64748b;}
+    .eyebrow {color:#2864eb!important;letter-spacing:.08em!important;}
+    .brand {color:#172033!important;font-family:Arial,sans-serif!important;}
     [data-testid="stVerticalBlockBorderWrapper"] {border-radius:12px;}
     .eyebrow {color:#568171;font-size:.73rem;letter-spacing:.18em;font-weight:700;margin-bottom:.7rem;}
     .lead {font-size:1.12rem;color:#52645d;max-width:850px;line-height:1.65;margin-bottom:1.3rem;}
@@ -78,10 +88,10 @@ def style():
 
 def chart(fig, key=None):
     fig.update_layout(template="plotly_white", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                      font=dict(family="Arial", color="#29463e", size=13), margin=dict(l=10, r=10, t=25, b=15),
-                      legend=dict(title=None, orientation="h", y=1.12), hoverlabel=dict(bgcolor="white"))
+                      font=dict(family="Arial", color="#64748b", size=12), margin=dict(l=10, r=20, t=25, b=15),
+                      legend=dict(title=None, orientation="h", y=-.18, x=.5, xanchor="center"), hoverlabel=dict(bgcolor="white"))
     fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(gridcolor="#e4e9e1", zeroline=False)
+    fig.update_yaxes(gridcolor="#edf1f7", zeroline=False)
     st.plotly_chart(fig, width="stretch", key=key, config={"displaylogo": False, "scrollZoom": True,
                     "toImageButtonOptions": {"format": "png", "scale": 2, "filename": "rota_do_diploma"}})
 
@@ -175,14 +185,91 @@ def trajectory_bar(frame):
     chart(fig)
 
 
+@st.fragment(run_every="1s")
+def cohort_simulator(data):
+    timeline = pd.DataFrame(data["timeline"]).sort_values("ano")
+    if empty(timeline):
+        return
+    years = timeline.ano.astype(int).tolist()
+    if st.session_state.get("cohort_playing", False):
+        current = st.session_state.get("cohort_year", years[-1])
+        index = years.index(current) if current in years else len(years) - 1
+        st.session_state.cohort_year = years[min(index + 1, len(years) - 1)]
+        if st.session_state.cohort_year == years[-1]:
+            st.session_state.cohort_playing = False
+    with st.container(border=True):
+        control, slider = st.columns([1, 2])
+        with control:
+            st.markdown("**Simulador da turma · coorte 2015**")
+            playing = st.session_state.get("cohort_playing", False)
+            if st.button("Pausar" if playing else "▶ Reproduzir", key="cohort_toggle"):
+                st.session_state.cohort_playing = not playing
+                if not playing and st.session_state.get("cohort_year", years[-1]) == years[-1]:
+                    st.session_state.cohort_year = years[0]
+                st.rerun()
+        with slider:
+            year = st.select_slider("Ano de acompanhamento", options=years, value=years[-1], key="cohort_year")
+    row = timeline.loc[timeline.ano.eq(year)].iloc[0]
+    cards = [("Taxa de conclusão", number(row.tca, 1), "#2864eb", f"a cada 100 ingressantes · {year}"),
+             ("Taxa de desistência", number(row.tda, 1), "#ef4444", f"a cada 100 ingressantes · {year}"),
+             ("Retidos / cursando", number(row.tap, 1), "#0d9488", f"a cada 100 ingressantes · {year}"),
+             ("Ano crítico de perda", str(data["peak_year"]), "#ea580c", f"maior salto na série completa: +{number(data['peak_delta_pp'], 1)} p.p.")]
+    for col, (label, value, color, note) in zip(st.columns(4), cards):
+        col.markdown(f'<div class="kpi"><div class="kpi-label">{escape(label)}</div><div class="kpi-value" style="color:{color}">{escape(value)}</div><div class="kpi-note">{escape(note)}</div></div>', unsafe_allow_html=True)
+    st.write("")
+    left, right = st.columns([2, 3])
+    with left, st.container(border=True):
+        st.markdown("**Funil do diploma**")
+        st.caption(f"A cada 100 ingressantes ajustados · {year}")
+        fig = go.Figure(go.Pie(labels=["Conclusão", "Desistência", "Permanência"], values=[row.tca, row.tda, row.tap],
+                               hole=.7, sort=False, marker=dict(colors=[COLORS[x] for x in ["Conclusão", "Desistência", "Permanência"]], line=dict(color="white", width=3)),
+                               textinfo="none", hovertemplate="%{label}: %{value:.1f} a cada 100<extra></extra>"))
+        fig.update_layout(height=355, annotations=[dict(text=f"<b>{year}</b><br>ANO REF.", x=.5, y=.5, showarrow=False, font_size=20)])
+        chart(fig, "cohort_donut")
+    with right, st.container(border=True):
+        st.markdown("**Evolução da coorte 2015**")
+        st.caption("Por 100 ingressantes ajustados, ano a ano")
+        fig = go.Figure()
+        for field, label in [("tca", "Conclusão"), ("tda", "Desistência"), ("tap", "Permanência")]:
+            fig.add_scatter(x=timeline.ano, y=timeline[field], name=label, mode="lines+markers", line=dict(color=COLORS[label], width=3), hovertemplate="%{x}: %{y:.1f}<extra>%{fullData.name}</extra>")
+        fig.add_vline(x=year, line_dash="dot", line_color="#cbd5e1")
+        fig.update_layout(height=355, yaxis=dict(range=[0, 100], title="Por 100 ingressantes"), xaxis=dict(dtick=1), hovermode="x unified")
+        chart(fig, "cohort_lines")
+    st.caption("Denominador ajustado por falecimentos; taxas arredondadas a 0,1 p.p. O ano crítico considera toda a série. Fonte: " + data["source_trajectory"])
+
+
+def course_ranking(data, frame=None, key="home_ranking"):
+    with st.container(border=True):
+        st.subheader("Em quais cursos a rota mais se perde?")
+        st.caption("Desistência acumulada · coorte 2015 presencial · referência 2024")
+        course_notice(data)
+        frame = pd.DataFrame(data["courses"]) if frame is None else frame.copy()
+        if empty(frame):
+            return
+        mode = st.radio("Visualizar ranking", ["Críticos (> 70%)", "Menor perda", "Por área CINE", "Ver todos"], horizontal=True, key=key)
+        group = "area" if mode == "Por área CINE" else "curso"
+        ranked = trajectory_summary(frame, ["ano", "coorte", group])
+        ranked = ranked.sort_values(["tda", group], ascending=[mode == "Menor perda", True])
+        if mode == "Críticos (> 70%)":
+            ranked = ranked.loc[ranked.tda.gt(70)].head(10)
+        elif mode == "Menor perda":
+            ranked = ranked.head(10)
+        if ranked.empty:
+            st.info("Nenhum curso com desistência acima de 70% neste recorte.")
+            return
+        color = "#0d9488" if mode == "Menor perda" else "#2864eb" if group == "area" else "#ef4444"
+        fig = px.bar(ranked, x="tda", y=group, orientation="h", text="tda", hover_data=["denominador", "tca"], labels=LABELS)
+        fig.update_traces(marker_color=color, texttemplate="%{x:.1f}%", textposition="outside", cliponaxis=False)
+        fig.update_layout(height=max(380, len(ranked) * 32 + 90), yaxis=dict(title=None, categoryorder="array", categoryarray=ranked[group].tolist()[::-1]), xaxis=dict(range=[0, 105], ticksuffix="%", title=None))
+        chart(fig, key + "_chart")
+        st.caption("Taxas ponderadas pelos ingressantes ajustados. Cursos de mesmo nome são agrupados apenas entre registros publicáveis; não representam todo MT.")
+
+
 def home(data):
-    st.markdown('<p class="lead">Do ingresso ao diploma, o que os dados revelam sobre o ensino superior em Mato Grosso?</p>', unsafe_allow_html=True)
-    st.caption("RECORTE PRINCIPAL · COORTE 2015 · PRESENCIAL · ACOMPANHAMENTO ATÉ 2024")
+    st.markdown('<div class="question">De cada 100 que entram numa graduação em MT, quantos chegam ao diploma e em quais cursos a rota se perde?</div>', unsafe_allow_html=True)
     frame = pd.DataFrame(data["p1"])
-    trajectory_metrics(frame)
-    st.subheader("Uma turma. Três caminhos.")
-    trajectory_bar(frame)
-    st.caption("Denominador ajustado por falecimentos. Fonte: " + data["source_trajectory"])
+    cohort_simulator(data)
+    course_ranking(data)
     st.subheader("Explore as perguntas do desafio")
     censo = pd.DataFrame(data["census"])
     recent = censo.loc[censo.ano.eq(2024)]
@@ -419,7 +506,13 @@ def render(page="home"):
         return
     title = next(item[2] for item in NAV if item[0] == page)
     st.markdown(f'<div class="eyebrow">ROTA DO DIPLOMA / {"PANORAMA" if page == "home" else page.upper()}</div>', unsafe_allow_html=True)
-    st.title(title)
+    st.title("Rota do Diploma — Dashboard Executivo" if page == "home" else title)
+    if page == "home":
+        subtitle, export = st.columns([4, 1])
+        subtitle.caption("DataHack Univag 2026 · Mato Grosso · Ensino superior · Fontes oficiais INEP e IBGE")
+        export.download_button("Exportar CSV", public_csv(pd.DataFrame(data["timeline"]).rename(columns=LABELS),
+                               metadata(data, data["source_trajectory"], "Ingressantes ajustados", "MT · coorte 2015 presencial")),
+                               file_name="rota_do_diploma_trajetoria.csv", mime="text/csv", type="primary")
     updated = datetime.fromisoformat(data["generated_at"]).astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M")
     st.caption(f"{mode} · Atualizado em {updated} (Brasília)")
     {"home": home, "p1": p1, "p2": p2, "p3": p3, "p4": p4, "p5": p5, "b1": b1, "b2": b2}[page](data)
