@@ -1,6 +1,7 @@
 """Oito telas; toda interação consome somente o snapshot público protegido."""
 
 import math
+from pathlib import Path
 from html import escape
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -11,22 +12,23 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src.analytics.metrics import AnalyticsError, trajectory_summary, correlation
+from src.analytics.answers import answers
 from src.analytics.snapshots import load_public_data
 from src.config import ConfigurationError
 from src.export.public import public_csv, public_xlsx
 
 NAV = [
     ("home", "Panorama", "Panorama do ensino superior", "app.py"),
-    ("p1", "P1 · A trajetória", "Quanto da turma fica pelo caminho?", "pages/1_Trajetoria.py"),
-    ("p2", "P2 · Cursos e áreas", "Onde a rota mais se perde?", "pages/2_Cursos.py"),
-    ("p3", "P3 · Redes e modalidades", "Pública × privada. Presencial × EAD.", "pages/3_Redes.py"),
-    ("p4", "P4 · Qualidade", "Qualidade retém?", "pages/4_Qualidade.py"),
-    ("p5", "P5 · Licenciaturas", "O caminho de quem vai ensinar", "pages/5_Licenciaturas.py"),
-    ("b1", "B1 · Oferta municipal", "Desertos de ensino superior", "pages/6_Municipios.py"),
-    ("b2", "B2 · Financiamento", "Financiamento e permanência", "pages/7_Financiamento.py"),
+    ("p1", "A trajetória", "Quanto da turma fica pelo caminho?", "pages/1_Trajetoria.py"),
+    ("p2", "Cursos e áreas", "Onde a rota mais se perde?", "pages/2_Cursos.py"),
+    ("p3", "Redes e modalidades", "Pública × privada. Presencial × EAD.", "pages/3_Redes.py"),
+    ("p4", "Qualidade", "Qualidade retém?", "pages/4_Qualidade.py"),
+    ("p5", "Licenciaturas", "O caminho de quem vai ensinar", "pages/5_Licenciaturas.py"),
+    ("b1", "Oferta municipal", "Desertos de ensino superior", "pages/6_Municipios.py"),
+    ("b2", "Financiamento", "Financiamento e permanência", "pages/7_Financiamento.py"),
 ]
-COLORS = {"Desistência": "#ef4444", "Conclusão": "#2864eb", "Permanência": "#94a3b8",
-          "Pública": "#258778", "Privada": "#e5704c", "Presencial": "#258778", "EAD": "#6f88ab"}
+COLORS = {"Desistência": "#DC3545", "Conclusão": "#28A745", "Permanência": "#0066CC",
+          "Pública": "#1A2B5E", "Privada": "#6F42C1", "Presencial": "#1A2B5E", "EAD": "#0066CC"}
 LABELS = {"ano": "Ano", "coorte": "Coorte", "curso": "Curso", "instituicao": "Instituição",
           "area": "Área", "rede": "Rede", "modalidade": "Modalidade", "grau": "Grau",
           "denominador": "Ingressantes ajustados", "desistentes": "Desistentes acumulados",
@@ -53,68 +55,89 @@ def get_data():
 
 def number(value, decimals=0, suffix=""):
     if pd.isna(value):
-        return "Indisponível"
+        return "—"
     return f"{value:,.{decimals}f}".replace(",", "#").replace(".", ",").replace("#", ".") + suffix
 
 
 def style():
-    st.markdown("""<style>
-    .stApp {background:#f7f9fc;color:#172033;}
-    [data-testid="stSidebar"] {background:#fff;border-right:1px solid #e2e8f0;}
-    .block-container {max-width:1260px;padding-top:2.4rem;padding-bottom:3rem;}
-    h1,h2,h3 {font-family:Arial,sans-serif;letter-spacing:-.025em;color:#172033;}
-    h1 {font-size:2rem!important;line-height:1.2!important;}
-    h2 {font-size:1.3rem!important;}
-    [data-testid="stMetric"] {background:white;padding:1.1rem 1.2rem;border:1px solid #e0e6dd;border-radius:12px;}
-    [data-testid="stMetricValue"] {color:#2864eb;font-size:2rem;}
-    [data-testid="stVerticalBlockBorderWrapper"] > div {background:white;}
-    .question {padding:18px 20px;background:#eff6ff;border:1px solid #cbdffc;border-radius:14px;color:#254780;font-weight:600;margin:16px 0 24px;}
-    .kpi {background:white;border:1px solid #e2e8f0;border-radius:14px;padding:20px;min-height:142px;box-shadow:0 2px 4px #17203304;}
-    .kpi-label {font-size:.82rem;color:#64748b;}
-    .kpi-value {font-size:2rem;font-weight:800;margin:7px 0;}
-    .kpi-note {font-size:.75rem;color:#64748b;}
-    .eyebrow {color:#2864eb!important;letter-spacing:.08em!important;}
-    .brand {color:#172033!important;font-family:Arial,sans-serif!important;}
-    [data-testid="stVerticalBlockBorderWrapper"] {border-radius:12px;}
-    .eyebrow {color:#568171;font-size:.73rem;letter-spacing:.18em;font-weight:700;margin-bottom:.7rem;}
-    .lead {font-size:1.12rem;color:#52645d;max-width:850px;line-height:1.65;margin-bottom:1.3rem;}
-    .brand {font-family:Georgia,serif;font-size:1.7rem;font-weight:bold;color:#1a5548;line-height:1.1;}
-    .subbrand {font-size:.7rem;letter-spacing:.13em;color:#6c8074;margin-top:.5rem;margin-bottom:1.3rem;}
-    button[kind="secondary"] {border-color:#d9e1d6;}
-    @media(max-width:700px){h1{font-size:2rem!important}.block-container{padding-top:1.1rem}}
-    @media print{[data-testid="stSidebar"],header,button{display:none!important}.stApp{background:white}.block-container{max-width:100%;padding:0}}
-    </style>""", unsafe_allow_html=True)
+    css = Path(__file__).with_name("univag.css").read_text(encoding="utf-8")
+    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+    st.markdown('<a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>', unsafe_allow_html=True)
 
 
-def chart(fig, key=None):
+def chart(fig, key=None, *, legend_top=False):
     fig.update_layout(template="plotly_white", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                      font=dict(family="Arial", color="#64748b", size=12), margin=dict(l=10, r=20, t=25, b=15),
+                      separators=",.", font=dict(family="Segoe UI", color="#495057", size=12), margin=dict(l=10, r=20, t=25, b=15),
                       legend=dict(title=None, orientation="h", y=-.18, x=.5, xanchor="center"), hoverlabel=dict(bgcolor="white"))
-    fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(gridcolor="#edf1f7", zeroline=False)
+    if legend_top:
+        # Separa a legenda do título do eixo nas barras horizontais compactas.
+        fig.update_layout(
+            margin=dict(l=10, r=35, t=80, b=70),
+            legend=dict(y=1.15, yanchor="bottom", x=0, xanchor="left", traceorder="normal"),
+        )
+    fig.update_xaxes(showgrid=False, automargin=True)
+    fig.update_yaxes(automargin=True, gridcolor="#E9ECEF", zeroline=False)
     st.plotly_chart(fig, width="stretch", key=key, config={"displaylogo": False, "scrollZoom": True,
                     "toImageButtonOptions": {"format": "png", "scale": 2, "filename": "rota_do_diploma"}})
+
+
+    # Alternativa tabular usa os mesmos pontos do gráfico e mantém valores ausentes.
+    rows = []
+    for trace in fig.data:
+        xs = getattr(trace, "x", None)
+        ys = getattr(trace, "y", None)
+        if trace.type == "pie":
+            xs, ys = trace.labels, trace.values
+        if xs is not None and ys is not None:
+            for x, y in zip(xs, ys):
+                def display(value):
+                    if pd.isna(value):
+                        return "—"
+                    return number(value, 2 if float(value) % 1 else 0) if pd.api.types.is_number(value) else str(value)
+                rows.append({"Série": trace.name or "Indicador", "Eixo X / categoria": display(x), "Eixo Y / valor": display(y)})
+    if rows:
+        with st.expander("Ver tabela do gráfico"):
+            st.caption("Mesmos pontos e unidades dos eixos do gráfico. Valores ausentes não representam zero.")
+            st.table(pd.DataFrame(rows))
 
 
 def clear_filters(prefix):
     for key in list(st.session_state):
         if key.startswith(prefix + "_"):
             del st.session_state[key]
+    for key in list(st.query_params):
+        if key.startswith(prefix + "_"):
+            del st.query_params[key]
+
+
+def sync_filter_url(key):
+    selected = st.session_state.get(key, [])
+    if selected:
+        st.query_params[key] = [str(v) for v in selected]
+    elif key in st.query_params:
+        del st.query_params[key]
 
 
 def filters(frame, fields, prefix):
     st.button("Limpar filtros", key=prefix + "_clear", on_click=clear_filters, args=(prefix,))
     result = frame.copy()
     cols = st.columns(min(len(fields), 4))
+    active = []
     for i, field in enumerate(fields):
         options = sorted(result[field].dropna().unique().tolist())
         with cols[i % len(cols)]:
             key = prefix + "_" + field
-            if key in st.session_state:
-                st.session_state[key] = [v for v in st.session_state[key] if v in options]
-            selected = st.multiselect(LABELS.get(field, field), options, key=key, placeholder="Todos")
+            requested = st.query_params.get_all(key)
+            st.session_state[key] = [v for v in options if str(v) in requested]
+            selected = st.multiselect(LABELS.get(field, field), options, key=key, placeholder="Todos",
+                                      on_change=sync_filter_url, args=(key,))
         if selected:
+            st.query_params[key] = [str(v) for v in selected]
+            active.append(f"{LABELS.get(field, field)}: {', '.join(map(str, selected))}")
             result = result.loc[result[field].isin(selected)]
+        elif key in st.query_params:
+            del st.query_params[key]
+    st.caption("Filtros ativos · " + (" · ".join(active) if active else "Todos os registros publicáveis deste painel"))
     return result
 
 
@@ -131,7 +154,7 @@ def table(frame, data, key, source, denominator, coverage):
             mask = visible.astype(str).apply(lambda c: c.str.contains(query, case=False, regex=False)).any(axis=1)
             visible = visible.loc[mask]
         if visible.empty:
-            st.info("Nenhum resultado para esta busca.")
+            st.info("Nenhum resultado para esta busca. Apague ou altere o termo de busca para ver os registros disponíveis.")
             return
         sort_cols = st.columns([3, 1, 1])
         order = sort_cols[0].selectbox("Ordenar por", list(visible), key=key + "_sort")
@@ -181,8 +204,9 @@ def trajectory_bar(frame):
         value = totals[field] / denominator * 100
         fig.add_bar(y=["A cada 100"], x=[value], name=name, orientation="h", marker_color=COLORS[name],
                     text=[f"{value:.1f}%"], textposition="inside", hovertemplate=name + ": %{x:.2f}%<extra></extra>")
-    fig.update_layout(barmode="stack", height=220, xaxis=dict(range=[0, 100], title="Percentual dos ingressantes ajustados"))
-    chart(fig)
+    fig.update_layout(barmode="stack", height=300,
+                      xaxis=dict(range=[0, 100], title=dict(text="Percentual dos ingressantes ajustados", standoff=18)))
+    chart(fig, legend_top=True)
 
 
 @st.fragment(run_every="1s")
@@ -210,10 +234,10 @@ def cohort_simulator(data):
         with slider:
             year = st.select_slider("Ano de acompanhamento", options=years, value=years[-1], key="cohort_year")
     row = timeline.loc[timeline.ano.eq(year)].iloc[0]
-    cards = [("Taxa de conclusão", number(row.tca, 1), "#2864eb", f"a cada 100 ingressantes · {year}"),
-             ("Taxa de desistência", number(row.tda, 1), "#ef4444", f"a cada 100 ingressantes · {year}"),
-             ("Retidos / cursando", number(row.tap, 1), "#0d9488", f"a cada 100 ingressantes · {year}"),
-             ("Ano crítico de perda", str(data["peak_year"]), "#ea580c", f"maior salto na série completa: +{number(data['peak_delta_pp'], 1)} p.p.")]
+    cards = [("Taxa de conclusão", number(row.tca, 1), "#0066CC", f"a cada 100 ingressantes · {year}"),
+             ("Taxa de desistência", number(row.tda, 1), "#DC3545", f"a cada 100 ingressantes · {year}"),
+             ("Retidos / cursando", number(row.tap, 1), "#1B5E20", f"a cada 100 ingressantes · {year}"),
+             ("Ano crítico de perda", str(data["peak_year"]), "#7A5A00", f"maior salto na série completa: +{number(data['peak_delta_pp'], 1)} p.p.")]
     for col, (label, value, color, note) in zip(st.columns(4), cards):
         col.markdown(f'<div class="kpi"><div class="kpi-label">{escape(label)}</div><div class="kpi-value" style="color:{color}">{escape(value)}</div><div class="kpi-note">{escape(note)}</div></div>', unsafe_allow_html=True)
     st.write("")
@@ -257,7 +281,7 @@ def course_ranking(data, frame=None, key="home_ranking"):
         if ranked.empty:
             st.info("Nenhum curso com desistência acima de 70% neste recorte.")
             return
-        color = "#0d9488" if mode == "Menor perda" else "#2864eb" if group == "area" else "#ef4444"
+        color = "#1B5E20" if mode == "Menor perda" else "#0066CC" if group == "area" else "#DC3545"
         fig = px.bar(ranked, x="tda", y=group, orientation="h", text="tda", hover_data=["denominador", "tca"], labels=LABELS)
         fig.update_traces(marker_color=color, texttemplate="%{x:.1f}%", textposition="outside", cliponaxis=False)
         fig.update_layout(height=max(380, len(ranked) * 32 + 90), yaxis=dict(title=None, categoryorder="array", categoryarray=ranked[group].tolist()[::-1]), xaxis=dict(range=[0, 105], ticksuffix="%", title=None))
@@ -267,10 +291,12 @@ def course_ranking(data, frame=None, key="home_ranking"):
 
 def home(data):
     st.markdown('<div class="question">De cada 100 que entram numa graduação em MT, quantos chegam ao diploma e em quais cursos a rota se perde?</div>', unsafe_allow_html=True)
+    st.info("Cobertura do desafio: P1 respondida; P2, P5 e B1 respondidas nos recortes disponíveis; P3, P4 e B2 parciais. Consulte as respostas e limitações em cada painel.")
     frame = pd.DataFrame(data["p1"])
     cohort_simulator(data)
     course_ranking(data)
     st.subheader("Explore as perguntas do desafio")
+    summaries = answers(data)
     censo = pd.DataFrame(data["census"])
     recent = censo.loc[censo.ano.eq(2024)]
     courses = pd.DataFrame(data["courses"])
@@ -296,12 +322,14 @@ def home(data):
                 st.markdown("### " + stats[key][0])
                 st.write(title)
                 st.caption(stats[key][1])
+                st.markdown(f"**{summaries[key][0]}**")
+                st.write(summaries[key][1])
                 st.page_link(path, label="Explorar análise →")
     st.subheader("Um sistema em transformação")
     visible = censo.loc[censo.matriculas.notna()].copy()
     visible["segmento"] = visible.rede + " · " + visible.modalidade
     chart(px.line(visible, x="ano", y="matriculas", color="segmento", markers=True, labels=LABELS,
-                  color_discrete_sequence=["#258778", "#89ad9c", "#e5704c", "#6f88ab"]))
+                  color_discrete_sequence=["#1A2B5E", "#89ad9c", "#6F42C1", "#0066CC"]))
     st.caption("Matrículas são vínculos no ano. Não representam a mesma população da coorte 2015.")
 
 
@@ -346,7 +374,7 @@ def p2(data):
     frame = frame.copy()
     frame["identificação"] = frame.curso + " · " + frame.CO_IES
     left, right = st.columns(2)
-    for col, ascending, title, color in [(left, False, "Maior desistência", "#e5704c"), (right, True, "Menor desistência", "#258778")]:
+    for col, ascending, title, color in [(left, False, "Maior desistência", "#6F42C1"), (right, True, "Menor desistência", "#1A2B5E")]:
         with col:
             st.subheader(title)
             ranked = frame.sort_values(["tda", "denominador"], ascending=[ascending, False]).head(10).sort_values("tda")
@@ -357,7 +385,7 @@ def p2(data):
     st.subheader("Áreas do conhecimento")
     grouped = trajectory_summary(frame, ["ano", "coorte", "area"]).sort_values("tda")
     chart(px.bar(grouped, y="area", x="tda", orientation="h", hover_data=["cursos", "denominador"], labels=LABELS,
-                 color_discrete_sequence=["#258778"]))
+                 color_discrete_sequence=["#1A2B5E"]))
     st.caption("Taxas ponderadas pelo denominador compatível; o ranking não é uma comparação causal de qualidade.")
     table(frame.drop(columns="identificação"), data, "p2_ranking", data["source_trajectory"], "Ingressantes ajustados", "Cursos publicáveis no mesmo horizonte")
 
@@ -411,7 +439,7 @@ def p4(data):
     st.caption("Cada ponto é um curso publicável. Associação não implica causalidade; área, rede, perfil discente e seleção no CPC podem explicar diferenças. Não há teste inferencial ou ajuste de confundidores neste MVP.")
     grouped = trajectory_summary(frame, ["ano", "coorte", "faixa_cpc"])
     st.subheader("Desistência por faixa de CPC")
-    chart(px.bar(grouped, x="faixa_cpc", y="tda", hover_data=["cursos", "denominador"], labels=LABELS, color_discrete_sequence=["#258778"]))
+    chart(px.bar(grouped, x="faixa_cpc", y="tda", hover_data=["cursos", "denominador"], labels=LABELS, color_discrete_sequence=["#1A2B5E"]))
     st.caption(f"Cobertura por ingressantes ajustados no filtro: {number(linked.denominador.sum() / frame.denominador.sum() * 100, 1)}%. A categoria Sem CPC permanece na base.")
     table(grouped, data, "p4_faixas", f"{data['source_trajectory']} + CPC {data['cpc_year']}", "Ingressantes ajustados", "Subconjunto publicável; junção temporal por IES e curso")
     table(frame, data, "p4_cursos", f"INEP · CPC {data['cpc_year']} e Trajetória 2024", "Ingressantes ajustados", "Sem CPC preservado; nenhuma multiplicação na junção")
@@ -439,7 +467,7 @@ def p5(data):
         grouped = enade.groupby("area", as_index=False)[["participantes", "proficientes"]].sum()
         grouped["proficiencia_pct"] = grouped.proficientes / grouped.participantes * 100
         chart(px.bar(grouped, x="proficiencia_pct", y="area", orientation="h", hover_data=["participantes"],
-                     labels={"proficiencia_pct": "No padrão 1 ou acima (%)", "area": "Área"}, color_discrete_sequence=["#258778"]))
+                     labels={"proficiencia_pct": "No padrão 1 ou acima (%)", "area": "Área"}, color_discrete_sequence=["#1A2B5E"]))
         table(enade, data, "p5_enade", "INEP · Enade Licenciaturas 2025", "Concluintes participantes; taxa ponderada pelos participantes", "Cursos presenciais publicáveis de MT; não representa todos os avaliados")
     st.write("Os concluintes avaliados pelo Enade não são necessariamente os mesmos estudantes da coorte 2015. Os painéis têm populações e denominadores próprios; não formam um funil individual contínuo.")
 
@@ -450,36 +478,59 @@ def b1(data):
     frame = filters(pd.DataFrame(data["municipal"]), ["situacao", "municipio"], "b1")
     if empty(frame):
         return
+    st.subheader("Municípios com zero vagas presenciais no recorte")
+    st.dataframe(frame.loc[frame.vagas.eq(0), ["municipio", "situacao", "vagas", "populacao_18_24"]].rename(columns=LABELS), hide_index=True, width="stretch")
     a, b, c = st.columns(3)
     a.metric("Vagas presenciais registradas", number(frame.vagas.sum()))
     b.metric("Municípios no recorte", number(frame.municipio.nunique()))
     c.metric("Vagas por 100 jovens", number(frame.vagas.sum() / frame.populacao_18_24.sum() * 100, 1))
-    fig = px.choropleth_map(frame, geojson=data["municipal_geometry"], locations="codigo_municipio",
-                            featureidkey="properties.codarea", color="vagas_por_100_jovens",
-                            hover_name="municipio", hover_data=["vagas", "populacao_18_24", "situacao"],
+    map_frame = frame.copy()
+    map_frame["escala_cor"] = map_frame.vagas_por_100_jovens.map(
+        lambda value: math.log1p(value) if pd.notna(value) else float("nan"))
+    # Keep the color range stable when filtering municipalities.
+    map_max = max(1.0, pd.DataFrame(data["municipal"]).vagas_por_100_jovens.max())
+    ticks = [value for value in [0, 1, 5, 10, 25, 50, 100, 250, 500, 1000] if value < map_max]
+    ticks.append(map_max)
+    fig = px.choropleth_map(map_frame, geojson=data["municipal_geometry"], locations="codigo_municipio",
+                            featureidkey="properties.codarea", color="escala_cor",
+                            hover_name="municipio", hover_data={"vagas_por_100_jovens": ":.2f", "vagas": True,
+                                                               "populacao_18_24": True, "situacao": True, "escala_cor": False},
                             map_style="white-bg", center={"lat": -12.7, "lon": -55.8}, zoom=4.5,
-                            color_continuous_scale="Teal", labels={"vagas_por_100_jovens": "Vagas / 100 jovens"})
-    fig.update_layout(height=550)
+                            color_continuous_scale=[[0, "#DCE2E8"], [.12, "#B9DDF1"], [.35, "#62B5D5"],
+                                                    [.6, "#2286B5"], [.8, "#1260A0"], [1, "#123566"]],
+                            range_color=(0, math.log1p(map_max)),
+                            labels={"vagas_por_100_jovens": "Vagas / 100 jovens"})
+    fig.update_traces(marker_line_color="#FFFFFF", marker_line_width=.7)
+    fig.update_layout(height=550, coloraxis_colorbar=dict(
+        title="Vagas / 100 jovens<br>(escala logarítmica)",
+        tickvals=[math.log1p(value) for value in ticks],
+        ticktext=[number(value, 1) if value == map_max else str(value) for value in ticks]))
     chart(fig)
+    st.caption("Cores em escala logarítmica (logₑ(1 + valor)) para destacar diferenças nos valores baixos. Cinza indica zero vagas; azul mais escuro indica maior oferta. Legenda e detalhes exibem valores originais.")
     st.caption("Malha IBGE incorporada ao snapshot, sem mapa-base externo. Zero indica nenhuma vaga presencial registrada no recorte validado, não ausência comprovada de acesso. Ausência de população não é convertida em zero.")
     ranked = frame.nlargest(20, "vagas_por_100_jovens").sort_values("vagas_por_100_jovens")
-    chart(px.bar(ranked, x="vagas_por_100_jovens", y="municipio", orientation="h", labels={"vagas_por_100_jovens": "Vagas por 100 jovens", "municipio": "Município"}, color_discrete_sequence=["#258778"]))
+    chart(px.bar(ranked, x="vagas_por_100_jovens", y="municipio", orientation="h", labels={"vagas_por_100_jovens": "Vagas por 100 jovens", "municipio": "Município"}, color_discrete_sequence=["#1A2B5E"]))
     table(frame, data, "b1_oferta", "INEP · Censo Superior 2022 + IBGE · Censo 2022", "População residente de 18–24 anos em 2022", "Cadastro e malha completos de 2022; sem oferta registrada identificado separadamente")
 
 
 def b2(data):
     st.markdown('<p class="lead">Qual é o peso de FIES e ProUni nas matrículas da rede privada?</p>', unsafe_allow_html=True)
     frame = pd.DataFrame(data["census"])
-    frame = filters(frame.loc[frame.rede.eq("Privada")], ["modalidade"], "b2")
+    private = frame.loc[frame.rede.eq("Privada")]
+    frame = filters(private, ["modalidade"], "b2")
     if empty(frame):
         return
     year = st.selectbox("Ano dos indicadores", sorted(frame.ano.unique(), reverse=True), key="b2_year")
     latest = frame.loc[frame.ano.eq(year)]
-    denominator = latest.matriculas.sum(min_count=len(latest))
     cols = st.columns(3)
     for col, key, name in zip(cols, ["fies", "prouni_integral", "prouni_parcial"], ["FIES", "ProUni integral", "ProUni parcial"]):
-        value = latest[key].sum(min_count=len(latest))
-        col.metric(name, number(value / denominator * 100 if denominator else None, 1, "%"), help="Participação entre matrículas privadas do ano e modalidade selecionados.")
+        selected = private.loc[private.ano.eq(year) & private.modalidade.eq("Presencial")] if key == "fies" else latest
+        denominator = selected.matriculas.sum(min_count=max(1, len(selected)))
+        value = selected[key].sum(min_count=max(1, len(selected)))
+        percentage = value / denominator * 100 if pd.notna(denominator) and denominator > 0 else None
+        help_text = ("Participação entre matrículas privadas presenciais do ano selecionado. Este card permanece fixo no presencial, independentemente do filtro de modalidade."
+                     if key == "fies" else "Participação entre matrículas privadas do ano e modalidade selecionados.")
+        col.metric("FIES · presencial" if key == "fies" else name, number(percentage, 1, "%"), help=help_text)
     st.subheader("Participação ao longo do tempo")
     long = frame.melt(id_vars=["ano", "modalidade"], value_vars=["fies_pct", "prouni_integral_pct", "prouni_parcial_pct"], var_name="programa", value_name="percentual")
     long["programa"] = long.programa.map(LABELS)
@@ -493,28 +544,42 @@ def b2(data):
 def render(page="home"):
     style()
     with st.sidebar:
-        st.markdown('<div class="brand">Rota do<br>Diploma<span style="color:#e5704c">.</span></div><div class="subbrand">DATAHACK · UNIVAG 2026</div>', unsafe_allow_html=True)
+        st.markdown('<div class="brand">Rota do<br>Diploma<span style="color:#6F42C1">.</span></div><div class="subbrand">DATAHACK · UNIVAG 2026</div>', unsafe_allow_html=True)
         st.caption("MATO GROSSO · ENSINO SUPERIOR")
         if st.button("Atualizar dados validados", width="stretch", help="Recarrega o snapshot ou a leitura pública. Não executa importação nem grava no banco."):
             get_data.clear()
             st.rerun()
     try:
-        data, mode = get_data()
+        with st.spinner("Carregando dados validados…"):
+            data, mode = get_data()
     except (AnalyticsError, ConfigurationError):
         st.title("Rota do Diploma")
-        st.info("Resultados validados ainda não disponíveis. Execute a construção administrativa do snapshot conforme o README.")
+        st.error("Não foi possível carregar os resultados validados. Seus filtros foram preservados. Tente novamente; se o problema continuar, solicite a atualização da base ao responsável.")
+        if st.button("Tentar novamente"):
+            get_data.clear()
+            st.rerun()
         return
     title = next(item[2] for item in NAV if item[0] == page)
-    st.markdown(f'<div class="eyebrow">ROTA DO DIPLOMA / {"PANORAMA" if page == "home" else page.upper()}</div>', unsafe_allow_html=True)
-    st.title("Rota do Diploma — Dashboard Executivo" if page == "home" else title)
+    page_class = "dashboard-home" if page == "home" else "dashboard-detail"
+    st.markdown(f'<div id="conteudo-principal" class="{page_class}" tabindex="-1"></div>', unsafe_allow_html=True)
     if page == "home":
-        subtitle, export = st.columns([4, 1])
-        subtitle.caption("DataHack Univag 2026 · Mato Grosso · Ensino superior · Fontes oficiais INEP e IBGE")
+        heading, export = st.columns([4, 1], vertical_alignment="center")
+        heading.markdown('<div class="eyebrow">ROTA DO DIPLOMA / PANORAMA</div>', unsafe_allow_html=True)
         export.download_button("Exportar CSV", public_csv(pd.DataFrame(data["timeline"]).rename(columns=LABELS),
                                metadata(data, data["source_trajectory"], "Ingressantes ajustados", "MT · coorte 2015 presencial")),
                                file_name="rota_do_diploma_trajetoria.csv", mime="text/csv", type="primary")
+        st.title("Rota do Diploma — Dashboard Executivo")
+        st.caption("DataHack Univag 2026 · Mato Grosso · Ensino superior · Fontes oficiais INEP e IBGE")
+    else:
+        st.markdown(f'<div class="eyebrow">ROTA DO DIPLOMA / {page.upper()}</div>', unsafe_allow_html=True)
+        st.title(title)
     updated = datetime.fromisoformat(data["generated_at"]).astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M")
     st.caption(f"{mode} · Atualizado em {updated} (Brasília)")
+    if page != "home":
+        status, answer = answers(data)[page]
+        st.markdown(f"**Resposta ao desafio · {status}**")
+        st.write(answer)
+        st.caption("Síntese do recorte completo disponível nesta página. Os filtros abaixo alteram os gráficos e tabelas, não esta síntese.")
     {"home": home, "p1": p1, "p2": p2, "p3": p3, "p4": p4, "p5": p5, "b1": b1, "b2": b2}[page](data)
     st.divider()
     with st.expander("Fontes, cobertura e metodologia"):

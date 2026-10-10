@@ -1,5 +1,6 @@
 """Estilos globais e tokens de design oficiais Univag para o dashboard Rota do Diploma."""
 
+from pathlib import Path
 import streamlit as st
 
 UNIVAG_CSS = """
@@ -165,3 +166,5 @@ button[kind="primary"]:hover {
 
 def apply_custom_styles():
     st.markdown(UNIVAG_CSS, unsafe_allow_html=True)
+    css = Path(__file__).with_name("univag.css").read_text(encoding="utf-8")
+    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
