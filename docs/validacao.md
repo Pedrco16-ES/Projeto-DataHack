@@ -1,4 +1,46 @@
-# Validação — Etapas 2, 3 e 4 — 10/10/2026
+# Validação — MVP e histórico — 10/10/2026
+
+## Passo 3 — integração validada
+
+Cinco testes essenciais aprovados em 7,67 s, cobrindo novas séries, proteção, filtros independentes, oito telas, exportações e fallback. Snapshot schema 2 e apresentação offline atualizados. Relatório e comando de reprodução: [integração do passo 3](integracao_passo3.md). Sem banco remoto ou agentes adicionais. Os registros abaixo são históricos.
+
+## Complementação de fontes e metodologia
+
+Passos 1 e 2 executados sem agentes adicionais. Fontes oficiais adquiridas com SHA-256, cinco novas coortes normalizadas e conferidas contra taxas oficiais, IBGE com sete idades e 141 geometrias reconciliadas, Enade com escala de fração/denominadores conferidos e fluxo estadual oficial preparado. Três testes essenciais novos passaram em 1,92 s. Revisão de horizontes, chaves e cobertura registrada em `data/processed/complementares_20261010/scope_validation.json`. Relatório completo: [fontes e metodologia](fontes_metodologia_20261010.md). Nenhum dado novo foi publicado no snapshot ou gravado no Supabase.
+
+## Etapas 5–8 — MVP local entregue
+
+Escopo ajustado pelo usuário: MVP em até três horas, sem agentes adicionais e somente testes essenciais. Sete testes de `tests/test_mvp.py` aprovados na execução final em **6,41 s**. Não repetida a bateria PostgreSQL da etapa 4; nenhum banco remoto foi alterado.
+
+| Etapa | Implementação | Pendência |
+| --- | --- | --- |
+| 5 | Contagens anuais/acumuladas, denominadores, P1/P2, matrículas P3, CPC P4, trajetória P5, contratos e SQL de leitura | Outras coortes, evasão anual e Enade 2025 |
+| 6 | Panorama e cinco páginas obrigatórias, navegação, gráficos/filtros/tabelas | Sem revisão visual em navegador |
+| 7 | B2 com FIES/ProUni separados; B1 com oferta municipal observada | Associação com evasão, IBGE, cadastro completo e geometria |
+| 8 | Oito telas, CSV/XLSX protegidos, cache, fallback, snapshot rastreável, documentação e apresentação HTML | Conta/esquema de snapshot público remoto opcionais; revisão editorial externa |
+
+### Evidências essenciais
+
+- Acumulação e taxas ponderadas: conferidas sobre fixtures didáticas isoladas; lacunas temporais/duplicatas rejeitadas.
+- Base real: 5.150 linhas de trajetória, 515 cursos completos, identidade dos estados e taxas oficiais conferidas; diferença máxima observada <0,00000001 p.p.
+- P1: 41.889 ingressantes ajustados; 25.092 desistentes, 16.253 concluintes e 544 permanentes. TDA 59,9012%, TCA 38,8002%, TAP 1,2987%.
+- Proteção primária/complementar: 283 cursos publicáveis, 232 omitidos. Mesmo subconjunto em P2/P4/P5. Resíduos contra P1 verificados. Falecimentos individuais/anuais não publicados.
+- Censo: 176.718 matrículas em 2021 e 189.869 em 2024 no recorte validado. FIES pequeno no EAD é ocultado com sua taxa; matrículas seguras preservadas. Nenhuma soma parcial de benefícios ocultos vira total.
+- CPC: 90 cursos publicáveis com conceito em 2023; junção sem multiplicação; Sem CPC preservado; Pearson descritivo ≈0,0452 antes dos filtros.
+- Exportações CSV/XLSX: fórmulas neutralizadas e metadados preservados.
+- Snapshot: integridade SHA-256, aprovação local e fallback após falha simulada de conexão pública verificados, sem propagar mensagem privada do driver.
+- Streamlit AppTest: panorama e sete páginas sem exceções; filtro por rede e Limpar filtros conferidos.
+- Servidor temporário real: health e página principal HTTP 200, encerrado após conferência. Log em `data/processed/mvp_server_smoke.log`.
+- Apresentação `outputs/apresentacao.html` gerada; autocontida, sem CDN. Impressão PDF e gravação de vídeo têm instruções, mas não foram executadas.
+- `git diff --check` sem erros; somente avisos LF/CRLF de Windows. Sem instalação, commits, push ou deploy.
+
+O primeiro pytest terminou as sete verificações, mas encontrou permissão negada ao limpar o diretório temporário global do Windows. Um diretório temporário novo em `data/processed/` resolveu. Após refinar a proteção de financiamento, a seleção essencial foi repetida e passou; nenhuma bateria extensa foi executada.
+
+### Arquivos e operação
+
+Criados: `app.py`, sete scripts em `pages/`, `components/dashboard.py`, cinco módulos em `src/analytics/`, `src/export/public.py`, `tests/test_mvp.py`, `sql/003_analytics_readonly.sql`, `sql/004_public_snapshot.sql`, `scripts/export_presentation.py`, `.streamlit/config.toml`, `iniciar_mvp.cmd`, `docs/apresentacao.md` e `prompts/005_008_mvp.md`. README, contratos de métricas, arquitetura, dashboard e documentação de outputs atualizados. Artefatos reais em outputs são ignorados pelo Git.
+
+Próximo passo operacional: abrir `iniciar_mvp.cmd` e ensaiar a apresentação. Próximo passo de dados: obter Enade 2025/IBGE e aprovar definição da evasão anual. O MVP está funcional, mas os critérios científicos completos do desafio não estão todos satisfeitos devido a essas pendências. Supabase continua com a persistência privada da etapa 4; o leitor remoto de snapshots foi implementado, porém esquema/conta pública/carga remota não foram ativados nesta sessão.
 
 ## Etapa 4 — concluída e validada no Supabase
 

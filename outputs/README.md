@@ -1,5 +1,7 @@
-# Resultados públicos
+# Artefatos locais do MVP
 
-Ainda não há resultados aprovados. Nenhum dado de demonstração é publicado.
+- `public_snapshot.json`: resultados oficiais protegidos, versão/hash, fontes e aprovação técnica local.
+- `public_snapshot.previous.json`: cópia anterior para reversão.
+- `apresentacao.html`: apresentação autocontida, gerada por `scripts/export_presentation.py`.
 
-Snapshots futuros deverão incluir fonte, período, denominador, cobertura, data e validação da supressão de células pequenas. A inclusão no Git exige revisão explícita; arquivos novos são ignorados por padrão.
+Resultados ignorados pelo Git. Reconstrução pela CLI descrita no README. Não colocar dados brutos/credenciais aqui. Aprovação local permite demonstração; publicação externa requer revisão e autorização próprias.
