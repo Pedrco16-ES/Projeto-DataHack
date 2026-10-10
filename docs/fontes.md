@@ -1,5 +1,11 @@
 # Fontes locais — diagnóstico de 10/10/2026
 
+## Atualização: fontes complementares adquiridas
+
+Enade Licenciaturas 2025, coortes 2016–2020, população IBGE 18–24 por município de 2022, cadastro/malha 2022 e fluxo oficial por UF foram baixados, preparados e integrados às telas no passo 3. Consulte [integração concluída](integracao_passo3.md), [fontes e metodologia](fontes_metodologia_20261010.md) e [manifesto com URLs/hashes](fontes_complementares_manifest.json). Originais e preparados permanecem nos diretórios privados de dados; a interface usa somente o snapshot protegido.
+
+## Histórico anterior à aquisição complementar
+
 Dados ficam em ../Dados, fora do repositório do projeto: cerca de 2,21 GB. Censo 2015–2024 com CSV de cursos/IES e dicionários; Trajetória 2015–2024 com XLSX e dicionário DOCX; CPC 2015–2019 e 2021–2023. Não foram localizados Enade 2025 das licenciaturas, população municipal IBGE de 18–24 anos ou geometrias.
 
 Trajetória: nomes técnicos na linha 9; arquivo identificado como coorte 2015. Coluna técnica TADA, apesar do rótulo visual TDAN. Ordem das colunas difere do dicionário. Censo 2021/2022/2023/2024: 200/200/202/223 colunas, cabeçalhos lidos com separador ; e latin-1. Confirmar cada edição durante a ingestão.

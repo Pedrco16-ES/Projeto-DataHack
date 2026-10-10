@@ -4,7 +4,42 @@ Projeto realizado no dia 10/10/26. Análise da trajetória dos estudantes do ens
 
 ## Estado atual
 
-Etapa 4 concluída: configuração, conexão PostgreSQL com TLS, ingestão local, tratamento do recorte MT, interface administrativa, migration e persistência transacional privada. Após autorização, cinco lotes com 67.824 registros foram carregados e reconciliados no Supabase. A repetição reutilizou os lotes sem duplicação. Ainda não há dashboard público, tabelas de indicadores ou resultados analíticos aprovados.
+**Passo 3 concluído:** novas fontes integradas ao snapshot e às telas: comparação das coortes 2015–2020 no horizonte comum de quatro anos, Enade Licenciaturas 2025 protegido, evasão oficial estadual e mapa dos 141 municípios com vagas por 100 jovens em 2022. Consulte [integração e validação](docs/integracao_passo3.md) e [fontes e metodologia](docs/fontes_metodologia_20261010.md).
+
+MVP local das etapas 5–8 implementado: oito telas Streamlit, métricas verificadas com dados reais, CPC 2023, financiamento, oferta municipal, filtros, CSV/XLSX e snapshot offline protegido. A etapa 4 permanece com cinco lotes e 67.824 registros reconciliados no Supabase.
+
+Limites: evasão anual sem desagregação por rede/modalidade/curso; associação com financiamento indisponível. Enade tem 11 de 84 cursos presenciais publicáveis após proteção e não representa todo MT. A publicação remota do snapshot continua pendente. O MVP não equivale à conclusão científica de todas as perguntas.
+
+## Abrir o MVP agora
+
+Na pasta `Projeto-DataHack`, com o ambiente existente:
+
+```powershell
+.\venv\Scripts\python.exe -m streamlit run app.py --server.address=127.0.0.1
+```
+
+Abra `http://localhost:8501`. Alternativa: execute `iniciar_mvp.cmd`. O snapshot em `outputs/public_snapshot.json` permite abrir as oito telas sem rede ou banco. P1, coorte 2015 presencial, até 2024: **59,9% desistência, 38,8% conclusão e 1,3% permanência** sobre 41.889 ingressantes ajustados em 515 cursos. O detalhamento usa 283 cursos publicáveis e não representa a população completa.
+
+## Reconstruir resultados e apresentação
+
+```powershell
+.\venv\Scripts\python.exe -m src.analytics
+.\venv\Scripts\python.exe -m src.analytics --approve-local "Revisão técnica do MVP local"
+.\venv\Scripts\python.exe scripts/export_presentation.py
+```
+
+O primeiro comando gera candidato administrativo sem mudar o snapshot. O segundo valida hashes, fórmulas, chaves e proteção e grava atomicamente o snapshot local, preservando `public_snapshot.previous.json`. Não publica na internet nem grava no Supabase. Para reverter, restaure a cópia anterior junto da versão de código compatível: o passo 3 exige snapshot schema 2. A apresentação `outputs/apresentacao.html` funciona offline e pode ser impressa em PDF. Consulte [apresentação](docs/apresentacao.md).
+
+Em outra máquina, copie o snapshot protegido para `outputs/` para usar o dashboard. Para reconstruir, copie os lotes finais, `stage4_plan.json`, os arquivos oficiais CPC e os diretórios `data/raw/complementares_20261010` e `data/processed/complementares_20261010`, incluindo manifestos e relatórios. Esses dados são ignorados pelo Git. Não copie credenciais administrativas para hospedar a interface.
+
+## Verificação rápida do MVP
+
+```powershell
+$mvpTestDir = Join-Path (Get-Location) ('data/processed/mvp-tests-' + [guid]::NewGuid().ToString('N'))
+.\venv\Scripts\python.exe -B -m pytest tests/test_mvp.py -q -p no:cacheprovider --basetemp $mvpTestDir
+```
+
+Sete testes essenciais: oito telas, matemática, proteção, junções, exportações e fallback. Não iniciam banco, instalam pacotes ou alteram Supabase. Os testes anteriores continuam disponíveis.
 
 ## Instalação no Windows
 
@@ -42,7 +77,7 @@ O teste de conexão executa `SELECT 1`, verifica TLS e encerra a transação sem
 
 ## Estrutura
 
-`src/ingestion` e `src/processing`: leitura e tratamento locais; `src/database`: conexão; `src/analytics`: métricas futuras; `src/export`: downloads administrativos CSV/XLSX. `components` e `pages` serão usados no dashboard. `sql`, `tests`, `docs` e `prompts` guardam respectivamente scripts, testes, documentação e registros de IA.
+`src/ingestion` e `src/processing`: tratamento; `src/database`: conexão e persistência; `src/analytics`: cálculos, proteção e snapshots; `src/export`: downloads administrativos e públicos separados. `components/dashboard.py`, `app.py` e `pages/` implementam as oito telas. `sql`, `tests`, `docs` e `prompts` guardam scripts, testes, documentação e registros de IA.
 
 `data/raw` e `data/processed` são ignorados, exceto os marcadores de diretório. `outputs` não recebe arquivos no Git automaticamente: cada resultado precisará de aprovação e proteção de células menores que 10. Dados brutos e rejeitados nunca devem aparecer na interface pública.
 
@@ -70,8 +105,8 @@ O segundo comando requer os binários PostgreSQL locais e executa testes em uma 
 
 ## Próximas etapas
 
-Etapa 5: métricas obrigatórias com contratos e validações estatísticas. Etapas posteriores: oito telas, bônus, exportação pública protegida e snapshots offline. Lacunas de fontes e de cobertura seguem documentadas; estar carregado na staging não significa aprovação para publicação.
+Completar fontes pendentes e rever a metodologia antes da publicação externa. Consultas administrativas: `sql/003_analytics_readonly.sql`. O backend público opcional lê `marts.public_snapshots` exclusivamente com `PUBLIC_DATABASE_URL`, sem fallback para a conta administrativa. Estrutura em `sql/004_public_snapshot.sql`, ainda não aplicada; faltam conta com SELECT restrito e carga do snapshot. O MVP entregue utiliza snapshot local.
 
-O comando `streamlit run app.py` será disponibilizado quando o dashboard público existir. A aplicação de migrations e cargas PostgreSQL não é automática; não há deploy configurado.
+O botão de atualização recarrega dados aprovados e invalida o cache de 5 minutos. Importações continuam na administração local. Migrations, cargas remotas e deploy não são automáticos.
 
 Leia [fontes](docs/fontes.md), [contratos pendentes](docs/metricas.md), [dashboard previsto](docs/dashboard.md) e [validação](docs/validacao.md).

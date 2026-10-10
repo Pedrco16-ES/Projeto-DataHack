@@ -1,0 +1,172 @@
+{
+  "files": {
+    "ibge_municipios_mt_atual.json": {
+      "url": "https://servicodados.ibge.gov.br/api/v1/localidades/estados/51/municipios",
+      "resolved_url": "https://servicodados.ibge.gov.br/api/v1/localidades/estados/51/municipios",
+      "retrieved_at": "2026-10-10T19:00:49.615423+00:00",
+      "sha256": "6a5506b41f96b2aa1dbab29a85c235d8550dfef95a484d37605db23a9645a9e4",
+      "bytes": 64818,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Last-Modified": null,
+        "ETag": null
+      }
+    },
+    "ibge_9514_metadados.json": {
+      "url": "https://servicodados.ibge.gov.br/api/v3/agregados/9514/metadados",
+      "resolved_url": "https://servicodados.ibge.gov.br/api/v3/agregados/9514/metadados",
+      "retrieved_at": "2026-10-10T19:00:50.449113+00:00",
+      "sha256": "1d049151ee97b2f42705a7a53cead75fbe2cc6e63f528cafe548655823a6e911",
+      "bytes": 8542,
+      "headers": {
+        "Content-Type": "application/json",
+        "Last-Modified": null,
+        "ETag": null
+      }
+    },
+    "ibge_18_24_municipios_mt_2022.json": {
+      "url": "https://servicodados.ibge.gov.br/api/v3/agregados/9514/periodos/2022/variaveis/93?localidades=N6%5BN3%5B51%5D%5D&classificacao=2%5B6794%5D%7C287%5B6575%2C6576%2C6577%2C6578%2C6579%2C6580%2C6581%5D%7C286%5B113635%5D",
+      "resolved_url": "https://servicodados.ibge.gov.br/api/v3/agregados/9514/periodos/2022/variaveis/93?localidades=N6%5BN3%5B51%5D%5D&classificacao=2%5B6794%5D%7C287%5B6575%2C6576%2C6577%2C6578%2C6579%2C6580%2C6581%5D%7C286%5B113635%5D",
+      "retrieved_at": "2026-10-10T19:00:50.604563+00:00",
+      "sha256": "ef41212ebc7d498ef36b86bc75a4934f985d192601b7d828a91822e088983d3e",
+      "bytes": 123161,
+      "headers": {
+        "Content-Type": "application/json",
+        "Last-Modified": null,
+        "ETag": null
+      }
+    },
+    "ibge_malha_mt_2022.geojson": {
+      "url": "https://servicodados.ibge.gov.br/api/v3/malhas/estados/51?formato=application%2Fvnd.geo%2Bjson&qualidade=minima&intrarregiao=municipio&periodo=2022",
+      "resolved_url": "https://servicodados.ibge.gov.br/api/v3/malhas/estados/51?formato=application%2Fvnd.geo%2Bjson&qualidade=minima&intrarregiao=municipio&periodo=2022",
+      "retrieved_at": "2026-10-10T19:00:51.156558+00:00",
+      "sha256": "35a6dccfe49e078ff2b9f5cedd3e96ebb936031528121388a93070cabbe47305",
+      "bytes": 210314,
+      "headers": {
+        "Content-Type": "application/vnd.geo+json",
+        "Last-Modified": null,
+        "ETag": null
+      }
+    },
+    "enade_licenciaturas_2025.xlsx": {
+      "url": "https://download.inep.gov.br/educacao_superior/indicadores/resultados/2025/conceito_enade_licenciaturas.xlsx",
+      "resolved_url": "https://download.inep.gov.br/educacao_superior/indicadores/resultados/2025/conceito_enade_licenciaturas.xlsx",
+      "retrieved_at": "2026-10-10T19:01:58.474182+00:00",
+      "sha256": "12e73c0603d388711f914dae9d8e3ea15b46aa56fde2a11b4634baa9e8417911",
+      "bytes": 546797,
+      "headers": {
+        "Last-Modified": "Tue, 26 May 2026 14:20:59 GMT",
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "ETag": "\"857ed-652b9343b68c0\""
+      }
+    },
+    "metodologia_trajetoria_2017.pdf": {
+      "url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/2017/metodologia_indicadores_trajetoria_curso.pdf",
+      "resolved_url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/2017/metodologia_indicadores_trajetoria_curso.pdf",
+      "retrieved_at": "2026-10-10T19:02:09.451490+00:00",
+      "sha256": "50f6621ad61cf11b8b66a90c5e46385b4f8a06e036f6bcda6c7d8d8bc75a288f",
+      "bytes": 1836772,
+      "headers": {
+        "Last-Modified": "Fri, 29 Sep 2017 18:28:53 GMT",
+        "Content-Type": "application/pdf",
+        "ETag": "\"1c06e4-55a58326a4340\""
+      }
+    },
+    "enade_pnd_resultados_2025.pdf": {
+      "url": "https://download.inep.gov.br/educacao_superior/enade/pnd_e_enade_2025_cursos.pdf",
+      "resolved_url": "https://download.inep.gov.br/educacao_superior/enade/pnd_e_enade_2025_cursos.pdf",
+      "retrieved_at": "2026-10-10T19:02:10.020530+00:00",
+      "sha256": "f35db5bfb7d6c4d9364ab29bf92689839ec8c12a00dd7962a8b2a1801b65f3f3",
+      "bytes": 1025329,
+      "headers": {
+        "Last-Modified": "Wed, 20 May 2026 18:11:15 GMT",
+        "Content-Type": "application/pdf",
+        "ETag": "\"fa531-65243b8ae96c0\""
+      }
+    },
+    "apresentacao_censo_2024.pdf": {
+      "url": "https://download.inep.gov.br/educacao_superior/censo_superior/documentos/2024/apresentacao_censo_da_educacao_superior_2024.pdf",
+      "resolved_url": "https://download.inep.gov.br/educacao_superior/censo_superior/documentos/2024/apresentacao_censo_da_educacao_superior_2024.pdf",
+      "retrieved_at": "2026-10-10T19:03:07.442801+00:00",
+      "sha256": "efc9e28097dbde254c15ff27f6ba1a33137361e71d62eec14ce0808da5391e9b",
+      "bytes": 6455810,
+      "headers": {
+        "Last-Modified": "Wed, 08 Jul 2026 18:13:06 GMT",
+        "Content-Type": "application/pdf",
+        "ETag": "\"628202-6561d7585b080\""
+      }
+    },
+    "trajetoria_2017_2024.zip": {
+      "url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2017_2024.zip",
+      "resolved_url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2017_2024.zip",
+      "retrieved_at": "2026-10-10T19:05:46.532088+00:00",
+      "sha256": "90130f61e9ffb7903456c841d5daf69aec5f7a854726cd26e42022647f9b0540",
+      "bytes": 71826778,
+      "headers": {
+        "Last-Modified": "Fri, 22 Aug 2025 14:59:20 GMT",
+        "Content-Type": "application/zip",
+        "ETag": "\"447fd5a-63cf573570200\""
+      }
+    },
+    "trajetoria_2016_2024.zip": {
+      "url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2016_2024.zip",
+      "resolved_url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2016_2024.zip",
+      "retrieved_at": "2026-10-10T19:05:48.409518+00:00",
+      "sha256": "fcc9f785b1ebecd17f2a75af57e0ef5c45863915ebc4e8796ac89ac3f214397f",
+      "bytes": 75203314,
+      "headers": {
+        "Last-Modified": "Fri, 22 Aug 2025 14:58:12 GMT",
+        "Content-Type": "application/zip",
+        "ETag": "\"47b82f2-63cf56f496900\""
+      }
+    },
+    "trajetoria_2018_2024.zip": {
+      "url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2018_2024.zip",
+      "resolved_url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2018_2024.zip",
+      "retrieved_at": "2026-10-10T19:05:54.320362+00:00",
+      "sha256": "44075a164340fda53fb080f9f00eeba8f5bd9bcb8397c0fe4ac801df72758f0b",
+      "bytes": 67809928,
+      "headers": {
+        "Last-Modified": "Fri, 22 Aug 2025 15:00:16 GMT",
+        "Content-Type": "application/zip",
+        "ETag": "\"40ab288-63cf576ad8000\""
+      }
+    },
+    "trajetoria_2020_2024.zip": {
+      "url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2020_2024.zip",
+      "resolved_url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2020_2024.zip",
+      "retrieved_at": "2026-10-10T19:08:10.671550+00:00",
+      "sha256": "dbdc6793f74f8623ac7d5e1e3202d58e3b63e11d040b84f6be533c0bf97c1d04",
+      "bytes": 53084022,
+      "headers": {
+        "Last-Modified": "Fri, 22 Aug 2025 15:01:58 GMT",
+        "Content-Type": "application/zip",
+        "ETag": "\"329ff76-63cf57cc1e580\""
+      }
+    },
+    "trajetoria_2019_2024.zip": {
+      "url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2019_2024.zip",
+      "resolved_url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_trajetoria_es_2019_2024.zip",
+      "retrieved_at": "2026-10-10T19:08:24.009412+00:00",
+      "sha256": "a443cd5c28e38f317130c41381d8c82fad0c33912e292f1900e39bc9abce9eb0",
+      "bytes": 61982303,
+      "headers": {
+        "Last-Modified": "Fri, 22 Aug 2025 15:01:10 GMT",
+        "Content-Type": "application/zip",
+        "ETag": "\"3b1c65f-63cf579e57980\""
+      }
+    },
+    "fluxo_uf_2010_2024.zip": {
+      "url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_fluxo_UF_2010_2024.zip",
+      "resolved_url": "https://download.inep.gov.br/informacoes_estatisticas/indicadores_educacionais/indicadores_fluxo_UF_2010_2024.zip",
+      "retrieved_at": "2026-10-10T19:10:06.398553+00:00",
+      "sha256": "f6cd75b845f38b97df6e6e0c0f0f0868fe226f710dee393dfe5f85ede2700a1e",
+      "bytes": 221995,
+      "headers": {
+        "Last-Modified": "Tue, 02 Sep 2025 17:40:22 GMT",
+        "Content-Type": "application/zip",
+        "ETag": "\"3632b-63dd4fb7e8d80\""
+      }
+    }
+  }
+}
