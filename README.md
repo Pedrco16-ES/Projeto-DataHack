@@ -103,10 +103,10 @@ Consulte [persistência](docs/persistencia.md) para objetos SQL, plano de carga,
 
 O segundo comando requer os binários PostgreSQL locais e executa testes em uma instância exclusiva de loopback, encerrada ao final. Não conecta ao Supabase. O plano desta sessão está em `data/processed/stage4_plan.json`; ele contém cinco lotes com 67.824 registros, não alunos únicos. A documentação fornece os comandos de aplicação e retirada lógica para execução autorizada.
 
-## Próximas etapas
+## Execução do Dashboard Público (8 Telas)
 
 Completar fontes pendentes e rever a metodologia antes da publicação externa. Consultas administrativas: `sql/003_analytics_readonly.sql`. O backend público opcional lê `marts.public_snapshots` exclusivamente com `PUBLIC_DATABASE_URL`, sem fallback para a conta administrativa. Estrutura em `sql/004_public_snapshot.sql`, ainda não aplicada; faltam conta com SELECT restrito e carga do snapshot. O MVP entregue utiliza snapshot local.
 
 O botão de atualização recarrega dados aprovados e invalida o cache de 5 minutos. Importações continuam na administração local. Migrations, cargas remotas e deploy não são automáticos.
 
-Leia [fontes](docs/fontes.md), [contratos pendentes](docs/metricas.md), [dashboard previsto](docs/dashboard.md) e [validação](docs/validacao.md).
+Consulte [documentação do dashboard](docs/dashboard.md), [fontes](docs/fontes.md) e [validação](docs/validacao.md).
